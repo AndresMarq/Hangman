@@ -12,12 +12,18 @@ class ViewController: UIViewController, UITextFieldDelegate {
     var guessWords = ["Dog": "Dalmatian", "Emperor": "Augustus", "Brand": "Apple", "Game": "Zelda"]
     var remainingLife: UILabel!
     var clueLabel: UILabel!
-    var answerLabel : UILabel!
+    var answerLabel: UILabel!
     var letterAnswers = [String]()
     var inputField: UITextField!
     var answer = ""
     
     var usedLetters = [String]()
+    
+    var life = 7 {
+        didSet {
+            remainingLife.text = String(repeating: "❤️", count: life)
+        }
+    }
     
     override func loadView() {
         view = UIView()
@@ -33,8 +39,8 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
         remainingLife = UILabel()
         remainingLife.translatesAutoresizingMaskIntoConstraints = false
+        remainingLife.text = "❤️❤️❤️❤️❤️❤️❤️"
         remainingLife.font = UIFont.systemFont(ofSize: 18)
-        remainingLife.text = "❤️❤️❤️❤️❤️"
         remainingLife.numberOfLines = 0
         view.addSubview(remainingLife)
         
@@ -45,27 +51,20 @@ class ViewController: UIViewController, UITextFieldDelegate {
         clueLabel.numberOfLines = 0
         view.addSubview(clueLabel)
         
-        startGame()
-        
         answerLabel = UILabel()
         answerLabel.translatesAutoresizingMaskIntoConstraints = false
-        var labelText = ""
-        
-        for _ in 0..<answer.count {
-            // Give the label temporary text
-            labelText.append("_ ")
-        }
-        answerLabel.text = labelText
+        answerLabel.text = "Test"
         answerLabel.font = UIFont.systemFont(ofSize: 36)
         answerLabel.numberOfLines = 0
-        
         view.addSubview(answerLabel)
-
+        
         inputField = UITextField()
         inputField.translatesAutoresizingMaskIntoConstraints = false
         inputField.placeholder = "Letter here"
         inputField.font = UIFont.systemFont(ofSize: 24)
         view.addSubview(inputField)
+        
+        startGame()
         
         let submit = UIButton(type: .system)
         submit.translatesAutoresizingMaskIntoConstraints = false
@@ -95,26 +94,46 @@ class ViewController: UIViewController, UITextFieldDelegate {
         inputField.delegate = self
     }
     
-    func startGame() {
+    @objc func startGame() {
         let guessWord = guessWords.randomElement()
         clueLabel.text = guessWord?.key ?? ""
         answer = guessWord?.value ?? ""
+        
+        var labelText = ""
+        for _ in 0..<answer.count {
+            // Give the label temporary text
+            labelText.append("_ ")
+        }
+        answerLabel.text = labelText
+        
+        letterAnswers = []
         for letter in answer {
             let strLetter = String(letter)
             letterAnswers.append(strLetter)
         }
-        print(letterAnswers)
+        
+        usedLetters = []
+        inputField.text = ""
+        
+        life = 7
     }
     
     @objc func submitTapped() {
         var tracker = 0
-        if usedLetters.contains(inputField.text!) {
-            print("Wrong!")
-            return
+        if usedLetters.contains(inputField.text!) && life >= 1 {
+            life -= 1
+            if life == 0 {
+                gameOver()
+                return
+            } else {
+                let ac = UIAlertController(title: "Wrong Guess", message: "Please try again", preferredStyle: .alert)
+                ac.addAction(UIAlertAction(title: "Keep trying!", style: .default))
+                present(ac, animated: true)
+                return
+            }
         }
         for (index, letter) in letterAnswers.enumerated() {
             if letter.capitalized == inputField.text! {
-                print("Correct letter")
                 tracker += 1
                 usedLetters.append(inputField.text!)
                 var splitAnswers = answerLabel.text?.components(separatedBy: " ")
@@ -122,9 +141,33 @@ class ViewController: UIViewController, UITextFieldDelegate {
                 answerLabel.text = splitAnswers?.joined(separator: " ")
             }
         }
-        if tracker == 0 {
-            print("Wrong!")
+        if tracker == 0 && life >= 1 {
+            life -= 1
+            if life == 0 {
+                gameOver()
+                return
+            } else {
+                let ac = UIAlertController(title: "Wrong Guess", message: "Please try again", preferredStyle: .alert)
+                ac.addAction(UIAlertAction(title: "Keep trying!", style: .default))
+                present(ac, animated: true)
+                return
+            }
         }
+        
+        if answerLabel.text?.contains("_") == false {
+            let ac = UIAlertController(title: "Success!", message: nil, preferredStyle: .alert)
+            ac.addAction(UIAlertAction(title: "Start Again", style: .default))
+            present(ac, animated: true)
+            startGame()
+            return
+        }
+    }
+    
+    func gameOver() {
+        let ac = UIAlertController(title: "Game Over!", message: nil, preferredStyle: .alert)
+        ac.addAction(UIAlertAction(title: "Start Again", style: .default))
+        present(ac, animated: true)
+        startGame()
     }
 
     // Limit number of possible characters in text field to 1
