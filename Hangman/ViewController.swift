@@ -58,11 +58,16 @@ class ViewController: UIViewController, UITextFieldDelegate {
         answerLabel.numberOfLines = 0
         view.addSubview(answerLabel)
         
+        
         inputField = UITextField()
         inputField.translatesAutoresizingMaskIntoConstraints = false
         inputField.placeholder = "Letter here"
         inputField.font = UIFont.systemFont(ofSize: 24)
         view.addSubview(inputField)
+        
+        clueLabel.setContentHuggingPriority(UILayoutPriority(1), for: .vertical)
+        answerLabel.setContentHuggingPriority(UILayoutPriority(1), for: .vertical)
+        inputField.setContentHuggingPriority(UILayoutPriority(1), for: .vertical)
         
         startGame()
         
@@ -84,7 +89,8 @@ class ViewController: UIViewController, UITextFieldDelegate {
             inputField.topAnchor.constraint(equalTo: answerLabel.bottomAnchor, constant: 50),
             inputField.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             submit.topAnchor.constraint(equalTo: inputField.bottomAnchor, constant: 50),
-            submit.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+            submit.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            submit.bottomAnchor.constraint(equalTo: view.layoutMarginsGuide.bottomAnchor, constant: -200)
         ])
     }
     
